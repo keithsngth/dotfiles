@@ -35,3 +35,5 @@ auto_switch = false
 
 [ui.sound]
 enabled = false
+claude = "off"
+codex = "off"
