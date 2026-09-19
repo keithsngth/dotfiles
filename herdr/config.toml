@@ -32,3 +32,6 @@ kitty_graphics = true
 [theme]
 name = "kanagawa"
 auto_switch = false
+
+[ui.sound]
+enabled = false
