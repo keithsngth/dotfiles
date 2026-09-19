@@ -4,8 +4,10 @@
 **/auth.json
 pi/bin
 pi/sessions
+pi/trust.json
 pi/npm/node_modules/
 pi/npm/.package-lock.json
+pi/models-store.json
 pi/extensions/herdr-agent-state.ts
 herdr/*.log
 herdr/*.sock
