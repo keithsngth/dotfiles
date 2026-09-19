@@ -1,0 +1,11 @@
+.DS_Store
+
+# never track secrets or machine-local runtime state, even if copied here by mistake
+**/auth.json
+pi/bin/
+pi/sessions/
+herdr/*.log
+herdr/*.sock
+herdr/session.json
+herdr/session-history.json
+herdr/release-notes.json

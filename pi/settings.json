@@ -1,0 +1,9 @@
+{
+  "lastChangelogVersion": "0.85.1",
+  "theme": "dark",
+  "defaultProvider": "anthropic",
+  "defaultModel": "claude-opus-4-8",
+  "warnings": {
+    "anthropicExtraUsage": false
+  }
+}
