@@ -1,9 +1,23 @@
 {
   "lastChangelogVersion": "0.85.1",
-  "theme": "dark",
-  "defaultProvider": "anthropic",
-  "defaultModel": "claude-opus-4-8",
+  "theme": "cc-my-pi-dark",
+  "defaultProvider": "openai-codex",
+  "defaultModel": "gpt-5.6-luna",
   "warnings": {
     "anthropicExtraUsage": false
-  }
+  },
+  "packages": [
+    "npm:pi-footer",
+    "npm:cc-my-pi"
+  ],
+  "quietStartup": true,
+  "ccMyPiSetupDone": true,
+  "extraToolOutputExpanded": false,
+  "statuslineEnabled": false,
+  "toolBackground": "transparent",
+  "themeAdaptive": false,
+  "imagePasterEnabled": true,
+  "groupToolCalls": true,
+  "groupToolCallsAcrossTurns": true,
+  "showCompactToolStatusDots": false
 }

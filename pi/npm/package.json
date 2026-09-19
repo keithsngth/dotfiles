@@ -1,0 +1,9 @@
+{
+  "name": "pi-extensions",
+  "private": true,
+  "dependencies": {
+    "@effect/platform-node-shared": "4.0.0-beta.98",
+    "cc-my-pi": "^1.4.1",
+    "pi-footer": "^0.5.1"
+  }
+}

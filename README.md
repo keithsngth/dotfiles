@@ -23,7 +23,9 @@ cd ~/Documents/GitHub/dotfiles
 
 Or via the Makefile: `make install`, `make herdr`, `make pi`, `make deps`, `make uninstall`.
 
-Each tool installs its own CLI if missing, then symlinks its config into place. Anything already at the target path is backed up (not deleted) to `~/.dotfiles_backup/<timestamp>/` before being replaced.
+Each tool installs its own CLI if missing, then links its configuration into place. Pi uses `pi/` in this repository as its complete agent directory, so its settings, model catalog, extensions, package manifest, lockfile, and installed package sources all resolve from this checkout. Anything already at a target path is backed up (not deleted) to `~/.dotfiles_backup/<timestamp>/` before being replaced.
+
+Pi's `~/.pi/agent` path becomes a symlink to `pi/`. The generated `pi/npm/node_modules/` directory is ignored by Git; `pi/npm/package.json` and `pi/npm/package-lock.json` are the reproducible extension dependency state. Pi credentials, sessions, and helper binaries stay in `~/.pi/local/` and are exposed through ignored symlinks inside `pi/`.
 
 Requires Node/npm to already be on the machine for `pi`'s install — the script tells you if it's missing rather than installing a runtime for you.
 
@@ -37,9 +39,9 @@ Each tool's install logic — config symlinks, CLI bootstrap, plugin/addon steps
 
 ## What's intentionally not tracked
 
-Secrets and machine-local runtime state never leave the machine:
+Secrets and machine-local runtime state never enter Git:
 
 - pi's `auth.json` (live OAuth tokens)
-- pi's `bin/` (vendored `fd`/`rg` binaries) and `sessions/` (chat history)
+- pi's `bin/` (vendored `fd`/`rg` binaries), `sessions/` (chat history), and generated `npm/node_modules/`
 - herdr's logs, sockets, and session state
-- herdr's pi integration file (`~/.pi/agent/extensions/herdr-agent-state.ts`) — herdr manages and overwrites this itself when the integration is installed/updated, so it isn't hand-synced here
+- herdr's generated Pi integration file (`pi/extensions/herdr-agent-state.ts`) — herdr manages and overwrites this itself when the integration is installed/updated, so it isn't hand-synced here

@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "enabled": true,
+  "preset": "default",
+  "lines": [
+    [
+      {
+        "id": "starship",
+        "type": "external-status",
+        "enabled": true,
+        "options": {
+          "raw": true,
+          "hideWhenEmpty": true,
+          "icon": "",
+          "text": "",
+          "externalStatusKey": "dotfiles:starship",
+          "trimValue": 0,
+          "preserveTrimStyles": true
+        }
+      }
+    ],
+    [
+      {
+        "id": "cship",
+        "type": "external-status",
+        "enabled": true,
+        "options": {
+          "raw": true,
+          "hideWhenEmpty": true,
+          "icon": "",
+          "text": "",
+          "externalStatusKey": "dotfiles:cship",
+          "trimValue": 0,
+          "preserveTrimStyles": true
+        }
+      }
+    ]
+  ],
+  "separator": "space",
+  "separatorFg": "default",
+  "separatorBg": "default",
+  "iconMode": "nerd",
+  "minimalist": false,
+  "terminal": {
+    "widthMode": "full",
+    "colorLevel": "ansi256"
+  },
+  "extensionStatusRow": {
+    "hiddenKeys": [
+      "dotfiles:starship",
+      "dotfiles:cship"
+    ],
+    "knownKeys": [
+      "dotfiles:starship",
+      "dotfiles:cship"
+    ]
+  }
+}

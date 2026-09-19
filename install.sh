@@ -7,6 +7,10 @@ set -e
 
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BACKUP_DIR="$HOME/.dotfiles_backup/$(date +%Y%m%d_%H%M%S)"
+PI_REPO_DIR="$DOTFILES_DIR/pi"
+PI_AGENT_DIR="$HOME/.pi/agent"
+PI_SETTINGS_PATH="$HOME/.pi/settings.json"
+PI_LOCAL_STATE_DIR="$HOME/.pi/local"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -45,6 +49,71 @@ link() {
     success "Linked $dst -> $src"
 }
 
+# Move an existing Pi runtime item into the machine-local state directory.
+move_if_present() {
+    local src="$1"
+    local dst="$2"
+
+    if [[ ! -e "$src" && ! -L "$src" ]]; then
+        return
+    fi
+
+    if [[ -e "$dst" || -L "$dst" ]]; then
+        warn "Keeping existing $src; local state already exists at $dst"
+        return
+    fi
+
+    mkdir -p "$(dirname "$dst")"
+    mv "$src" "$dst"
+    success "Moved $src -> $dst"
+}
+
+# Keep credentials, history, and helper binaries outside the repository while
+# making them available through the repo-backed Pi agent directory.
+prepare_pi_local_state() {
+    mkdir -p "$HOME/.pi" "$PI_LOCAL_STATE_DIR"
+
+    if [[ -d "$PI_AGENT_DIR" && ! -L "$PI_AGENT_DIR" ]]; then
+        move_if_present "$PI_AGENT_DIR/auth.json" "$PI_LOCAL_STATE_DIR/auth.json"
+        move_if_present "$PI_AGENT_DIR/bin" "$PI_LOCAL_STATE_DIR/bin"
+        move_if_present "$PI_AGENT_DIR/sessions" "$PI_LOCAL_STATE_DIR/sessions"
+
+        if [[ -d "$PI_AGENT_DIR/npm" && ! -e "$PI_REPO_DIR/npm" ]]; then
+            mv "$PI_AGENT_DIR/npm" "$PI_REPO_DIR/npm"
+            success "Moved $PI_AGENT_DIR/npm -> $PI_REPO_DIR/npm"
+        fi
+
+        # These were the old per-file links. The whole agent directory will
+        # become one link to the repository below.
+        [[ -L "$PI_AGENT_DIR/settings.json" ]] && rm "$PI_AGENT_DIR/settings.json"
+        [[ -L "$PI_AGENT_DIR/models-store.json" ]] && rm "$PI_AGENT_DIR/models-store.json"
+        [[ -L "$PI_AGENT_DIR/extensions/pi-footer.json" ]] && rm "$PI_AGENT_DIR/extensions/pi-footer.json"
+        [[ -d "$PI_AGENT_DIR/extensions" ]] && rmdir "$PI_AGENT_DIR/extensions" 2>/dev/null || true
+
+        if [[ -n "$(find "$PI_AGENT_DIR" -mindepth 1 -maxdepth 1 -print -quit)" ]]; then
+            backup "$PI_AGENT_DIR"
+        else
+            rmdir "$PI_AGENT_DIR"
+        fi
+    elif [[ -e "$PI_AGENT_DIR" || -L "$PI_AGENT_DIR" ]]; then
+        if [[ "$(readlink "$PI_AGENT_DIR" 2>/dev/null || true)" != "$PI_REPO_DIR" ]]; then
+            backup "$PI_AGENT_DIR"
+        else
+            return
+        fi
+    fi
+
+    ln -s "$PI_REPO_DIR" "$PI_AGENT_DIR"
+    success "Linked $PI_AGENT_DIR -> $PI_REPO_DIR"
+}
+
+prepare_pi_state_links() {
+    mkdir -p "$PI_LOCAL_STATE_DIR/bin" "$PI_LOCAL_STATE_DIR/sessions"
+    link "$PI_LOCAL_STATE_DIR/auth.json" "$PI_REPO_DIR/auth.json"
+    link "$PI_LOCAL_STATE_DIR/bin" "$PI_REPO_DIR/bin"
+    link "$PI_LOCAL_STATE_DIR/sessions" "$PI_REPO_DIR/sessions"
+}
+
 # Install herdr configuration
 install_herdr() {
     info "Installing herdr configuration..."
@@ -76,9 +145,15 @@ install_pi() {
         npm install -g @earendil-works/pi-coding-agent
     fi
 
-    mkdir -p "$HOME/.pi/agent"
-    link "$DOTFILES_DIR/pi/settings.json" "$HOME/.pi/agent/settings.json"
-    link "$DOTFILES_DIR/pi/models-store.json" "$HOME/.pi/agent/models-store.json"
+    mkdir -p "$PI_REPO_DIR/extensions"
+    prepare_pi_local_state
+    link "$PI_REPO_DIR/settings.json" "$PI_SETTINGS_PATH"
+    prepare_pi_state_links
+
+    if [[ -f "$PI_REPO_DIR/npm/package.json" && -f "$PI_REPO_DIR/npm/package-lock.json" && ! -d "$PI_REPO_DIR/npm/node_modules" ]]; then
+        info "Installing Pi packages into the repository..."
+        npm install --prefix "$PI_REPO_DIR/npm" --no-audit --no-fund
+    fi
 
     # Addon/plugin installs for pi go here.
 
@@ -98,8 +173,14 @@ uninstall() {
     info "Uninstalling dotfiles..."
 
     [[ -L "$HOME/.config/herdr/config.toml" ]] && rm "$HOME/.config/herdr/config.toml" && success "Removed ~/.config/herdr/config.toml"
-    [[ -L "$HOME/.pi/agent/settings.json" ]] && rm "$HOME/.pi/agent/settings.json" && success "Removed ~/.pi/agent/settings.json"
-    [[ -L "$HOME/.pi/agent/models-store.json" ]] && rm "$HOME/.pi/agent/models-store.json" && success "Removed ~/.pi/agent/models-store.json"
+    if [[ -L "$PI_AGENT_DIR" && "$(readlink "$PI_AGENT_DIR")" == "$PI_REPO_DIR" ]]; then
+        rm "$PI_AGENT_DIR"
+        success "Removed $PI_AGENT_DIR link"
+    fi
+    if [[ -L "$PI_SETTINGS_PATH" && "$(readlink "$PI_SETTINGS_PATH")" == "$PI_REPO_DIR/settings.json" ]]; then
+        rm "$PI_SETTINGS_PATH"
+        success "Removed $PI_SETTINGS_PATH link"
+    fi
 
     if [[ -d "$HOME/.dotfiles_backup" ]]; then
         info "Backups available at: $HOME/.dotfiles_backup/"
