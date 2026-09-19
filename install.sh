@@ -126,8 +126,8 @@ install_herdr() {
     mkdir -p "$HOME/.config/herdr"
     link "$DOTFILES_DIR/herdr/config.toml" "$HOME/.config/herdr/config.toml"
 
-    # Addon/plugin installs for herdr go here, e.g.:
-    #   command -v herdr >/dev/null && herdr plugin install <owner>/<plugin> --yes
+    # Addon/plugin installs for herdr go here.
+    command -v herdr >/dev/null && herdr plugin install alexarthurs/herdr-sidebar/plugins/herdr-sidebar --yes
 
     success "herdr config installed. Reload a running server with 'herdr server reload-config'."
 }
