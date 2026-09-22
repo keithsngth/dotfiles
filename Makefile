@@ -2,7 +2,7 @@
 # Dotfiles Makefile
 # ============================================
 
-.PHONY: all install herdr pi deps uninstall help
+.PHONY: all install herdr pi wezterm shell deps uninstall help
 
 all: install
 
@@ -14,6 +14,12 @@ herdr: ## Install only herdr configuration
 
 pi: ## Install only pi configuration
 	@./install.sh pi
+
+wezterm: ## Install only WezTerm configuration
+	@./install.sh wezterm
+
+shell: ## Install zoxide, zsh-autosuggestions, and zsh-syntax-highlighting
+	@./install.sh shell
 
 deps: ## Check which tool CLIs are installed
 	@./install.sh deps

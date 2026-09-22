@@ -11,6 +11,7 @@ PI_REPO_DIR="$DOTFILES_DIR/pi"
 PI_AGENT_DIR="$HOME/.pi/agent"
 PI_SETTINGS_PATH="$HOME/.pi/settings.json"
 PI_LOCAL_STATE_DIR="$HOME/.pi/local"
+WEZTERM_CONFIG_DIR="$HOME/.config/wezterm"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -160,12 +161,52 @@ install_pi() {
     success "pi config installed."
 }
 
+# Install WezTerm configuration
+install_wezterm() {
+    info "Installing WezTerm configuration..."
+
+    if [[ ! -d "/Applications/WezTerm.app" ]] && ! command -v wezterm >/dev/null 2>&1; then
+        if command -v brew >/dev/null 2>&1; then
+            info "WezTerm not found, installing..."
+            brew install --cask wezterm
+        else
+            warn "WezTerm not found. Install it from https://wezterm.org/installation"
+        fi
+    fi
+
+    # Catppuccin ships inside WezTerm, so the theme needs no plugin install;
+    # the whole folder is linked so wezterm.lua can require its sibling modules.
+    link "$DOTFILES_DIR/wezterm" "$WEZTERM_CONFIG_DIR"
+
+    success "WezTerm config installed. A running WezTerm reloads it on save."
+}
+
+# Install shell enhancements (zoxide, zsh-autosuggestions, zsh-syntax-highlighting)
+install_shell() {
+    info "Installing shell enhancements..."
+
+    if ! command -v brew >/dev/null 2>&1; then
+        warn "Homebrew not found. Install zoxide, zsh-autosuggestions, and zsh-syntax-highlighting manually."
+        return
+    fi
+
+    command -v zoxide >/dev/null 2>&1 || brew install zoxide
+    brew list zsh-autosuggestions >/dev/null 2>&1 || brew install zsh-autosuggestions
+    brew list zsh-syntax-highlighting >/dev/null 2>&1 || brew install zsh-syntax-highlighting
+
+    success "Shell enhancements installed. Ensure ~/.zshrc sources zoxide, zsh-autosuggestions, and zsh-syntax-highlighting (the latter last)."
+}
+
 # Check which tool CLIs are present
 deps() {
     info "Checking dependencies..."
     command -v herdr >/dev/null 2>&1 && success "herdr found" || warn "herdr not found (run: ./install.sh herdr)"
     command -v npm >/dev/null 2>&1 && success "npm found" || warn "npm not found (needed for pi)"
     command -v pi >/dev/null 2>&1 && success "pi found" || warn "pi not found (run: ./install.sh pi)"
+    command -v zoxide >/dev/null 2>&1 && success "zoxide found" || warn "zoxide not found (run: ./install.sh shell)"
+    brew list zsh-autosuggestions >/dev/null 2>&1 && success "zsh-autosuggestions found" || warn "zsh-autosuggestions not found (run: ./install.sh shell)"
+    brew list zsh-syntax-highlighting >/dev/null 2>&1 && success "zsh-syntax-highlighting found" || warn "zsh-syntax-highlighting not found (run: ./install.sh shell)"
+    { [[ -d "/Applications/WezTerm.app" ]] || command -v wezterm >/dev/null 2>&1; } && success "wezterm found" || warn "wezterm not found (run: ./install.sh wezterm)"
 }
 
 # Remove symlinks
@@ -182,6 +223,11 @@ uninstall() {
         success "Removed $PI_SETTINGS_PATH link"
     fi
 
+    if [[ -L "$WEZTERM_CONFIG_DIR" && "$(readlink "$WEZTERM_CONFIG_DIR")" == "$DOTFILES_DIR/wezterm" ]]; then
+        rm "$WEZTERM_CONFIG_DIR"
+        success "Removed $WEZTERM_CONFIG_DIR link"
+    fi
+
     if [[ -d "$HOME/.dotfiles_backup" ]]; then
         info "Backups available at: $HOME/.dotfiles_backup/"
     fi
@@ -195,6 +241,8 @@ Commands:
   install      Install everything (default)
   herdr        Install herdr config only
   pi           Install pi config only
+  wezterm      Install WezTerm config only
+  shell        Install zoxide, zsh-autosuggestions, and zsh-syntax-highlighting
   deps         Check which tool CLIs are installed
   uninstall    Remove symlinks
   help         Show this help
@@ -209,9 +257,11 @@ EOF
 main() {
     local cmd="${1:-install}"
     case "$cmd" in
-        install) install_herdr; install_pi ;;
+        install) install_herdr; install_pi; install_wezterm; install_shell ;;
         herdr) install_herdr ;;
         pi) install_pi ;;
+        wezterm) install_wezterm ;;
+        shell) install_shell ;;
         deps) deps ;;
         uninstall) uninstall ;;
         help|-h|--help) show_help ;;
