@@ -124,6 +124,11 @@ config.keys = {
 	{ key = "]", mods = "CMD", action = wezterm.action.ActivatePaneDirection("Next") },
 	{ key = "w", mods = "CMD", action = wezterm.action.CloseCurrentPane({ confirm = true }) },
 	{ key = "Enter", mods = "CMD|SHIFT", action = wezterm.action.TogglePaneZoomState },
+	-- CTRL+SHIFT+K is herdr's previous_workspace; WezTerm binds it to
+	-- ClearScrollback by default. CMD+K still clears.
+	{ key = "K", mods = "CTRL", action = wezterm.action.DisableDefaultAssignment },
+	{ key = "K", mods = "CTRL|SHIFT", action = wezterm.action.DisableDefaultAssignment },
+	{ key = "k", mods = "CTRL|SHIFT", action = wezterm.action.DisableDefaultAssignment },
 }
 
 bar.apply(config, palette, BACKGROUND)
