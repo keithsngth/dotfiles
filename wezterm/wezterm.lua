@@ -115,6 +115,11 @@ config.visual_bell = {
 
 -- ------------------------------------------------------------------ keys ---
 
+-- Legacy encoding sends CTRL+[ as a bare ESC, so herdr's previous_agent
+-- binding leaks through as Escape (double-tap rewinds Claude Code). The kitty
+-- protocol lets apps that opt in (herdr) see CTRL+[ as its own key.
+config.enable_kitty_keyboard = true
+
 -- Splits and pane navigation, which macOS WezTerm otherwise leaves on awkward
 -- CTRL+SHIFT+ALT chords. Delete this block for stock key assignments.
 config.keys = {
