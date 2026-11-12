@@ -1,0 +1,9 @@
+# ~/.config/herdr-app links to this folder, so the Herdr app also writes its
+# state, sockets and shipped files here. Track only the person's config.
+*
+!.gitignore
+!settings.json
+!keys.json
+!themes/
+themes/*
+!themes/catppuccin-mocha.json

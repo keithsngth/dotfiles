@@ -133,6 +133,17 @@ install_herdr() {
     success "herdr config installed. Reload a running server with 'herdr server reload-config'."
 }
 
+# Install herdr app configuration. The whole app home is linked, not single
+# files: the app saves settings and keys by replacing them, which would break
+# per-file links. herdr-app/.gitignore keeps its state out of Git.
+install_herdr_app() {
+    info "Installing herdr app configuration..."
+
+    link "$DOTFILES_DIR/herdr-app" "$HOME/.config/herdr-app"
+
+    success "herdr app config installed. Restart the Herdr app to read it."
+}
+
 # Install pi configuration
 install_pi() {
     info "Installing pi configuration..."
@@ -214,6 +225,10 @@ uninstall() {
     info "Uninstalling dotfiles..."
 
     [[ -L "$HOME/.config/herdr/config.toml" ]] && rm "$HOME/.config/herdr/config.toml" && success "Removed ~/.config/herdr/config.toml"
+    if [[ -L "$HOME/.config/herdr-app" && "$(readlink "$HOME/.config/herdr-app")" == "$DOTFILES_DIR/herdr-app" ]]; then
+        rm "$HOME/.config/herdr-app"
+        success "Removed ~/.config/herdr-app link"
+    fi
     if [[ -L "$PI_AGENT_DIR" && "$(readlink "$PI_AGENT_DIR")" == "$PI_REPO_DIR" ]]; then
         rm "$PI_AGENT_DIR"
         success "Removed $PI_AGENT_DIR link"
@@ -240,6 +255,7 @@ Usage: ./install.sh [command]
 Commands:
   install      Install everything (default)
   herdr        Install herdr config only
+  herdr-app    Install herdr app config only
   pi           Install pi config only
   wezterm      Install WezTerm config only
   shell        Install zoxide, zsh-autosuggestions, and zsh-syntax-highlighting
@@ -257,8 +273,9 @@ EOF
 main() {
     local cmd="${1:-install}"
     case "$cmd" in
-        install) install_herdr; install_pi; install_wezterm; install_shell ;;
+        install) install_herdr; install_herdr_app; install_pi; install_wezterm; install_shell ;;
         herdr) install_herdr ;;
+        herdr-app) install_herdr_app ;;
         pi) install_pi ;;
         wezterm) install_wezterm ;;
         shell) install_shell ;;

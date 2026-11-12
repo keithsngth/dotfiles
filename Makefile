@@ -2,7 +2,7 @@
 # Dotfiles Makefile
 # ============================================
 
-.PHONY: all install herdr pi wezterm shell deps uninstall help
+.PHONY: all install herdr herdr-app pi wezterm shell deps uninstall help
 
 all: install
 
@@ -11,6 +11,9 @@ install: ## Install all configurations
 
 herdr: ## Install only herdr configuration
 	@./install.sh herdr
+
+herdr-app: ## Install only herdr app configuration
+	@./install.sh herdr-app
 
 pi: ## Install only pi configuration
 	@./install.sh pi
